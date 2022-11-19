@@ -24,8 +24,8 @@ export class UserController {
 
     @UseGuards(AuthGuard)
     @Patch('/:id')
-    doUserUpdate(@Param('id') id: string, @Body() { name, email, role }): any {
-        return this.userService.updateUser(id, name, email, role);
+    doUserUpdate(@Param('id') id: string, @Body() { name, email, phone, isResetPassword }): any {
+        return this.userService.updateUser(id, name, email, phone, isResetPassword);
     }
 
     @UseGuards(AuthGuard)
@@ -35,7 +35,7 @@ export class UserController {
     }
 
 
-    @Get('/:token')
+    @Get('user/:token')
     getUser(@Param('token') token: string): any {
         return this.userService.getUser(token);
     }

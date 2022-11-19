@@ -38,6 +38,7 @@ export class UserService {
 
 
     async createUser(name: string, email: string, phone: string, password: string): Promise<any> {
+        console.log(name,email,phone,password)
         try {
             const isUser = await User.findOne({ where: { email: email } });
             if (isUser) {
@@ -84,32 +85,22 @@ export class UserService {
 
 
 
-    async updateUser(id: string, name: string, email: string, role: string): Promise<any> {
+    async updateUser(id: string, name: string, email: string, phone: string, isResetPassword: boolean): Promise<any> {
         // console.log(name, email, role);
         try {
             const insensitiveEmail = email.slice(0, email.indexOf("@")).toLowerCase() +
                 email.slice(email.indexOf("@"));
 
-            try {
-                if (name === "" || name) {
-                    await NameSchema.validateAsync({ name: name });
-                }
-                if (email === "" || email) {
-                    await EmailSchema.validateAsync({ email: insensitiveEmail });
-                }
-                if (role === "" || role) {
-                    await RoleSchema.validateAsync({ role: role });
-
-                }
-            } catch (error) {
-                throw new HttpException(error.message, 400);
-
-            }
             const user = await User.findOne({
                 where: { id: id }
             });
             if (user) {
-                await User.update(id, { name, email: insensitiveEmail });
+                await User.update(id, { name, email: insensitiveEmail, phone: phone });
+                if (isResetPassword) {
+                    const hashedPassword = await bcrypt.hashSync("Abcd1234$", 10);
+                    await User.update(id, { password: hashedPassword });
+
+                }
 
                 return { success: true, statusCode: 200 }
             }
