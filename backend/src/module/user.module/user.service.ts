@@ -3,15 +3,18 @@ import { User } from 'src/db/entities/user.entity';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 import { EmailSchema, LoginSchema, NameSchema, RoleSchema, SignUpSchema } from 'src/JoiSchema/joiSchema';
-
+const pageSize = 6;
 
 @Injectable()
 export class UserService {
 
-    async getAllUsers(): Promise<any> {
+    async getAllUsers(page: number): Promise<any> {
         try {
-            const users = await User.find();
-            return { users, success: true }
+            const allUsers = await User.find();
+            const users = allUsers.slice((page - 1) * pageSize, page * pageSize);
+            const totalUsers = allUsers.length;
+
+            return { users, totalUsers, success: true }
         } catch (error) {
             throw new Error(error);
         }

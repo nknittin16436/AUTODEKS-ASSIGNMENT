@@ -238,7 +238,8 @@ export const allUsersReducer = (state = { users: [] }, action) => {
             return {
                 ...state,
                 loading: false,
-                users: action.payload
+                users: action.payload.users,
+                totalUsers: action.payload.totalUsers
             }
 
         case All_USERS_FAIL:

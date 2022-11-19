@@ -94,11 +94,17 @@ export const loadUser = () => async (dispatch) => {
 };
 
 
-export const getAllUsers = () => async (dispatch) => {
+export const getAllUsers = (page) => async (dispatch) => {
+  const token = localStorage.getItem('autodesk');
   try {
     dispatch({ type: All_USERS_REQUEST });
-    const { data } = await axios.get(`/api/v1/admin/users`);
-    dispatch({ type: All_USERS_SUCCESS, payload: data.users });
+    const { data } = await axios.get(`${url}/users?page=${page}`, {
+      headers: {
+        authtoken: token
+      }
+    });
+    console.log(data)
+    dispatch({ type: All_USERS_SUCCESS, payload: data });
   } catch (error) {
     dispatch({ type: All_USERS_FAIL, payload: error.response.data.message });
   }
@@ -127,9 +133,15 @@ export const updateUser = (userId, userData) => async (dispatch) => {
 };
 
 export const deleteUser = (userId) => async (dispatch) => {
+  const token = localStorage.getItem('autodesk');
+
   try {
     dispatch({ type: DELETE_USER_REQUEST });
-    const { data } = await axios.delete(`/api/v1/admin/user/${userId}`);
+    const { data } = await axios.delete(`${url}/users/${userId}`, {
+      headers: {
+        authtoken: token
+      }
+    });
     dispatch({ type: DELETE_USER_SUCCESS, payload: data });
   } catch (error) {
     dispatch({ type: DELETE_USER_FAIL, payload: error.response.data.message });

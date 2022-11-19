@@ -8,8 +8,8 @@ export class UserController {
 
     @UseGuards(AuthGuard)
     @Get('')
-    getUsers(): any {
-        return this.userService.getAllUsers();
+    getUsers(@Query() { page }): any {
+        return this.userService.getAllUsers(page);
     }
 
     @Post('/signup')
