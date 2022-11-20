@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Injectable, HttpException, NotFoundException } from '@nestjs/common';
 import { User } from 'src/db/entities/user.entity';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
@@ -25,7 +25,7 @@ export class UserService {
 
     async getUser(token: string): Promise<any> {
         try {
-            var decoded = jwt.verify(token, 'bikeReservation');
+            var decoded = jwt.verify(token, 'autodesk');
             const userId = decoded.id;
             const user = await User.findOne({ where: { id: userId } });
             const googleUser = await GoogleUser.findOne({ where: { id: userId } });
@@ -78,7 +78,7 @@ export class UserService {
             }
             const user = await User.findOne({ where: { email: email } });
             if (user && bcrypt.compareSync(password, user.password)) {
-                const token = jwt.sign({ id: user.id, time: Date.now() }, 'bikeReservation', { expiresIn: '24h' });
+                const token = jwt.sign({ id: user.id, time: Date.now() }, 'autodesk', { expiresIn: '24h' });
                 // delete user.password;
                 return { user, accessToken: token, success: true, statusCode: 200 };
             }
@@ -142,8 +142,7 @@ export class UserService {
         try {
             const isUser = await GoogleUser.findOne({ where: { email: email } });
             if (isUser) {
-                console.log("loooo", isUser)
-                const token = jwt.sign({ id: isUser.id, time: Date.now() }, 'bikeReservation', { expiresIn: '24h' });
+                const token = jwt.sign({ id: isUser.id, time: Date.now() }, 'autodesk', { expiresIn: '24h' });
                 return { user: isUser, accessToken: token, success: true, statusCode: 200 };
             }
             else {
@@ -151,8 +150,7 @@ export class UserService {
                 user.name = name;
                 user.email = email;
                 await user.save();
-                const token = jwt.sign({ id: user.id, time: Date.now() }, 'bikeReservation', { expiresIn: '24h' });
-                console
+                const token = jwt.sign({ id: user.id, time: Date.now() }, 'autodesk', { expiresIn: '24h' });
                 return { user, accessToken: token, success: true, statusCode: 200 };
             }
 

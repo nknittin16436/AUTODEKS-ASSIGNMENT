@@ -14,7 +14,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { login, clearErrors, loginGoogleUser } from '../../action/userAction';
 import { useAlert } from "react-alert";
 import GoogleLogin from "react-google-login";
-import passwordValidator from 'password-validator';
 import { gapi } from 'gapi-script'
 import isEmail from 'validator/es/lib/isEmail';
 import isStrongPassword from 'validator/es/lib/isStrongPassword';
@@ -133,7 +132,7 @@ const Login = () => {
                                 <GoogleLogin
                                     clientId={`523562066484-54i9uk4u8nha2n2m56h824upsabucti3.apps.googleusercontent.com`}
                                     onSuccess={onSuccess}
-                                    buttonText="Login"
+                                    buttonText="Login with Google"
                                     onFailure={onFailure}
                                     cookiePolicy={'single_host_origin'}
                                 />

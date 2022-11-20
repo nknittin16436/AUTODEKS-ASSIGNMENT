@@ -6,7 +6,7 @@ import { UserService } from './user.service';
 export class UserController {
     constructor(private readonly userService: UserService) { }
 
-    // @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard)
     @Get('')
     getUsers(@Query() { page }): any {
         return this.userService.getAllUsers(page);
@@ -28,7 +28,7 @@ export class UserController {
         return this.userService.updateUser(id, name, email, phone, isResetPassword);
     }
 
-    // @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard)
     @Delete('/:id')
     deleteUser(@Param('id') id: string): any {
         return this.userService.deleteUser(id);
