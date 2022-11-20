@@ -30,7 +30,6 @@ const NavBar = ({ user }) => {
 
     const handelLogout = async () => {
         dispatch(logoutUser());
-
         alert.success("Succesfully Logged Out");
         navigate('/login');
     }

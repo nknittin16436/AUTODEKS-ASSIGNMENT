@@ -1,4 +1,4 @@
-import  React ,{useEffect} from 'react';
+import React, { useEffect } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -10,11 +10,13 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useDispatch,useSelector } from 'react-redux'
-import { login,clearErrors } from '../../action/userAction';
+import { useDispatch, useSelector } from 'react-redux'
+import { login, clearErrors, loginGoogleUser } from '../../action/userAction';
 import { useAlert } from "react-alert";
-
-
+import GoogleLogin from "react-google-login";
+import axios from 'axios'
+import { gapi } from 'gapi-script'
+const clientId = "523562066484-54i9uk4u8nha2n2m56h824upsabucti3.apps.googleusercontent.com"
 
 const theme = createTheme();
 
@@ -22,9 +24,9 @@ const Login = () => {
 
     const dispatch = useDispatch();
     const alert = useAlert();
-    const navigate=useNavigate();
+    const navigate = useNavigate();
 
-    const { error, loading, isAuthenticated } = useSelector((state) => state.user);
+    const { error, isAuthenticated } = useSelector((state) => state.user);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -39,14 +41,27 @@ const Login = () => {
 
 
     useEffect(() => {
+
+        gapi.load("auth2", () => {
+            gapi.auth2.init({ client_id: clientId })
+        })
         if (error) {
-          alert.error(error);
-          dispatch(clearErrors());
+            alert.error(error);
+            dispatch(clearErrors());
         }
         if (isAuthenticated) {
-          navigate('/');
+            navigate('/');
         }
-      }, [dispatch, error, alert, isAuthenticated, navigate]);
+    }, [error, alert, isAuthenticated]);
+
+
+    const onSuccess = async (res) => {
+        const { name, email } = res.profileObj;
+        dispatch(loginGoogleUser(name, email))
+    };
+    const onFailure = (res) => {
+        console.log(res);
+    }
 
     return (
         <ThemeProvider theme={theme}>
@@ -97,9 +112,13 @@ const Login = () => {
                         </Button>
                         <Grid container>
                             <Grid item xs>
-                                <Link href="#" variant="body2">
-                                    Forgot password?
-                                </Link>
+                                <GoogleLogin
+                                    clientId={`523562066484-54i9uk4u8nha2n2m56h824upsabucti3.apps.googleusercontent.com`}
+                                    onSuccess={onSuccess}
+                                    buttonText="Login"
+                                    onFailure={onFailure}
+                                    cookiePolicy={'single_host_origin'}
+                                />
                             </Grid>
                             <Grid item>
                                 <Link to="/signup" variant="body2">

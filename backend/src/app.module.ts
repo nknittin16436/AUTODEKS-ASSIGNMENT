@@ -10,13 +10,13 @@ import { UserService } from './module/user.module/user.service';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
-    type :"sqlite",
+    type: "sqlite",
     database: "appdesk.db",
     entities: [__dirname + "/**/*.entity{.ts,.js}"],
     synchronize: true
   }),
-  ConfigModule.forRoot({ isGlobal: true,})],
-  controllers: [AppController,UserController],
-  providers: [AppService,UserService],
+  ConfigModule.forRoot({ isGlobal: true, })],
+  controllers: [AppController, UserController],
+  providers: [AppService, UserService],
 })
-export class AppModule {}
+export class AppModule { }

@@ -35,7 +35,7 @@ export default function UserTable({ users }) {
         </TableHead>
         <TableBody>
           {users && users.map((user) => (
-            <Tablerow user={user} />
+            <Tablerow user={user} key={user.id}/>
           ))}
         </TableBody>
       </Table>

@@ -2,15 +2,18 @@ import { Injectable, UnauthorizedException, HttpException, HttpStatus, NotFoundE
 import { User } from 'src/db/entities/user.entity';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
-import { EmailSchema, LoginSchema, NameSchema, RoleSchema, SignUpSchema } from 'src/JoiSchema/joiSchema';
+import { GoogleUser } from 'src/db/entities/googleuser.entity';
 const pageSize = 6;
 
 @Injectable()
 export class UserService {
 
     async getAllUsers(page: number): Promise<any> {
+        // main().catch(console.error);
         try {
-            const allUsers = await User.find();
+            const allGoogleUsers = await GoogleUser.find();
+            const allNormalUsers = await User.find();
+            const allUsers = [...allNormalUsers, ...allGoogleUsers];
             const users = allUsers.slice((page - 1) * pageSize, page * pageSize);
             const totalUsers = allUsers.length;
 
@@ -25,8 +28,9 @@ export class UserService {
             var decoded = jwt.verify(token, 'bikeReservation');
             const userId = decoded.id;
             const user = await User.findOne({ where: { id: userId } });
+            const googleUser = await GoogleUser.findOne({ where: { id: userId } });
 
-            if (user) {
+            if (user || googleUser) {
                 delete user.password;
                 return { user, success: true, statusCode: 200 }
             }
@@ -38,8 +42,12 @@ export class UserService {
 
 
     async createUser(name: string, email: string, phone: string, password: string): Promise<any> {
-        console.log(name,email,phone,password)
+        console.log(name, email, phone, password)
         try {
+            const isGoogleUser = await GoogleUser.findOne({ where: { email: email } });
+            if (isGoogleUser) {
+                throw new HttpException('This email is registered using Google Auth Please Login using Google', 400);
+            }
             const isUser = await User.findOne({ where: { email: email } });
             if (isUser) {
                 console.log(isUser)
@@ -63,15 +71,12 @@ export class UserService {
 
     async doUserLogin(email: string, password: string): Promise<any> {
         try {
-            const insensitiveEmail = email.slice(0, email.indexOf("@")).toLowerCase() +
-                email.slice(email.indexOf("@"));
-            try {
-                await LoginSchema.validateAsync({ email: insensitiveEmail, password: password });
-            } catch (error) {
-                throw new HttpException(error.message, 400);
 
+            const isGoogleUser = await GoogleUser.findOne({ where: { email: email } });
+            if (isGoogleUser) {
+                throw new HttpException('This email is registered using Google Auth Please Login using Google', 400);
             }
-            const user = await User.findOne({ where: { email: insensitiveEmail } });
+            const user = await User.findOne({ where: { email: email } });
             if (user && bcrypt.compareSync(password, user.password)) {
                 const token = jwt.sign({ id: user.id, time: Date.now() }, 'bikeReservation', { expiresIn: '24h' });
                 // delete user.password;
@@ -86,16 +91,12 @@ export class UserService {
 
 
     async updateUser(id: string, name: string, email: string, phone: string, isResetPassword: boolean): Promise<any> {
-        // console.log(name, email, role);
         try {
-            const insensitiveEmail = email.slice(0, email.indexOf("@")).toLowerCase() +
-                email.slice(email.indexOf("@"));
-
             const user = await User.findOne({
                 where: { id: id }
             });
             if (user) {
-                await User.update(id, { name, email: insensitiveEmail, phone: phone });
+                await User.update(id, { name, email: email, phone: phone });
                 if (isResetPassword) {
                     const hashedPassword = await bcrypt.hashSync("Abcd1234$", 10);
                     await User.update(id, { password: hashedPassword });
@@ -120,6 +121,11 @@ export class UserService {
 
     async deleteUser(id: string): Promise<any> {
         try {
+            const googleUser = await GoogleUser.findOne({ where: { id: id } });
+            if (googleUser) {
+                await GoogleUser.delete(id);
+                return { success: true, statusCode: 200 }
+            }
             const user = await User.findOne({ where: { id: id } });
             if (user) {
                 await User.delete(id);
@@ -128,6 +134,31 @@ export class UserService {
             else throw new HttpException('Unable to delete user', 400);
         } catch (error) {
             throw new HttpException(error, error.status);
+        }
+    }
+
+
+    async googleLogin(email: string, name: string): Promise<any> {
+        try {
+            const isUser = await GoogleUser.findOne({ where: { email: email } });
+            if (isUser) {
+                console.log("loooo", isUser)
+                const token = jwt.sign({ id: isUser.id, time: Date.now() }, 'bikeReservation', { expiresIn: '24h' });
+                return { user: isUser, accessToken: token, success: true, statusCode: 200 };
+            }
+            else {
+                const user = new GoogleUser();
+                user.name = name;
+                user.email = email;
+                await user.save();
+                const token = jwt.sign({ id: user.id, time: Date.now() }, 'bikeReservation', { expiresIn: '24h' });
+                console
+                return { user, accessToken: token, success: true, statusCode: 200 };
+            }
+
+        } catch (error) {
+            throw new HttpException(error, error.status);
+
         }
     }
 

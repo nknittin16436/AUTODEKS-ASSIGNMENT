@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, BeforeInsert } from "typeorm";
-import * as bcrypt from 'bcryptjs';
 @Entity()
 export class User extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
@@ -16,5 +15,8 @@ export class User extends BaseEntity {
 
     @Column()
     password: string
+
+    @Column({ nullable: true, default: "normal" })
+    type: string
 
 }
