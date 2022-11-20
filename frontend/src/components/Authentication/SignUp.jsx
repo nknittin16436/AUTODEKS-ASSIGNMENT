@@ -12,13 +12,15 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { register } from '../../action/userAction';
 import { useDispatch } from 'react-redux';
-import {useAlert} from 'react-alert'
+import { useAlert } from 'react-alert'
+import isEmail from 'validator/es/lib/isEmail';
+import isStrongPassword from 'validator/es/lib/isStrongPassword';
 const theme = createTheme();
 
 const SignUp = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const alert=useAlert();
+    const alert = useAlert();
     const handleSubmit = async (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
@@ -27,14 +29,46 @@ const SignUp = () => {
             email: data.get('email'),
             password: data.get('password'),
         });
-
-        const success = await dispatch(register(data.get('name'), data.get('email'), data.get('phone'), data.get('password')));
-        console.log(success)
-        if (success) {
-            alert.success("Registered succesfully Login to continue");
-            navigate("/login");
+        if (validateData(data.get('name'), data.get('email'), data.get('phone'), data.get('password'))) {
+            console.log("hey")
+            const success = await dispatch(register(data.get('name'), data.get('email'), data.get('phone'), data.get('password')));
+            console.log(success)
+            if (success) {
+                alert.success("Registered succesfully Login to continue");
+                navigate("/login");
+            }
         }
     };
+
+
+
+    const validateData = (name, email, phone, password) => {
+        if (name.trim().length < 3) {
+            alert.error("Invalid name or less than 3 chracters");
+            return false;
+        }
+
+        if (!isEmail(email)) {
+            alert.error("Invalid Email Id");
+            return false;
+        }
+        if (phone.trim().length !== 10) {
+            alert.error("phone number should be of 10 digit");
+            return false;
+        }
+        if (!/^\d+$/.test(phone)) {
+            alert.error("Phone number should contain numbers only");
+            return false;
+        }
+
+        if (!isStrongPassword(password)) {
+            alert.error("Password Should contain One upper case,one lower case,one number and one special character and atleast 8 characters long");
+            return false;
+        }
+
+        return true;
+    }
+
 
     return (
         <ThemeProvider theme={theme}>

@@ -14,11 +14,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import { login, clearErrors, loginGoogleUser } from '../../action/userAction';
 import { useAlert } from "react-alert";
 import GoogleLogin from "react-google-login";
-import axios from 'axios'
+import passwordValidator from 'password-validator';
 import { gapi } from 'gapi-script'
+import isEmail from 'validator/es/lib/isEmail';
+import isStrongPassword from 'validator/es/lib/isStrongPassword';
 const clientId = "523562066484-54i9uk4u8nha2n2m56h824upsabucti3.apps.googleusercontent.com"
 
 const theme = createTheme();
+
 
 const Login = () => {
 
@@ -31,13 +34,28 @@ const Login = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        console.log({
-            email: data.get('email'),
-            password: data.get('password'),
-        });
-        dispatch(login(data.get('email'), data.get('password')));
+        if (validateData(data.get('email'), data.get('password'))) {
+            console.log({
+                email: data.get('email'),
+                password: data.get('password'),
+            });
+            dispatch(login(data.get('email'), data.get('password')));
+        }
 
     };
+
+    const validateData = (email, password) => {
+        if (!isEmail(email)) {
+            alert.error("Invalid Email Id");
+            return false;
+        }
+        if (!isStrongPassword(password)) {
+            alert.error("Password Should contain One upper case,one lower case,one number and one special character and atleast 8 characters long");
+            return false;
+        }
+
+        return true;
+    }
 
 
     useEffect(() => {

@@ -15,6 +15,8 @@ import {
 } from "antd";
 import { useAlert } from 'react-alert';
 import { DELETE_USER_RESET, UPDATE_USER_RESET } from '../../../constants/userConstant';
+import isEmail from 'validator/es/lib/isEmail';
+
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
     '&:nth-of-type(odd)': {
         backgroundColor: theme.palette.action.hover,
@@ -54,8 +56,10 @@ const Tablerow = ({ user }) => {
         e.preventDefault();
         console.log(name, email, phone, isResetPassword);
         const userData = { name, email, phone, isResetPassword };
-        dispatch(updateUser(user.id, userData));
-        setIsModalVisible(false);
+        if (validateData(name, email, phone)) {
+            dispatch(updateUser(user.id, userData));
+            setIsModalVisible(false);
+        }
     }
     const onChange = (e) => {
         setIsResetPassword(e.target.checked);
@@ -66,6 +70,27 @@ const Tablerow = ({ user }) => {
         setEmail(user.email);
         setPhone(user.phone);
         setIsResetPassword(false);
+    }
+
+    const validateData = (name, email, phone, password) => {
+        if (name.trim().length < 3) {
+            alert.error("Invalid name or less than 3 chracters");
+            return false;
+        }
+
+        if (!isEmail(email)) {
+            alert.error("Invalid Email Id");
+            return false;
+        }
+        if (phone.trim().length !== 10) {
+            alert.error("phone number should be of 10 digit");
+            return false;
+        }
+        if (!/^\d+$/.test(phone)) {
+            alert.error("Phone number should contain numbers only");
+            return false;
+        }
+        return true;
     }
     useEffect(() => {
         if (error) {
