@@ -36,6 +36,11 @@ export class UserService {
             }
             else throw new HttpException('User does not exist', 400);
         } catch (error) {
+            console.log(error.message)
+            if (error.message === "jwt expired") {
+
+                throw new HttpException(error, 400);
+            }
             throw new HttpException(error, error.status);
         }
     }
